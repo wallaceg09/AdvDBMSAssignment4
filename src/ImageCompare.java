@@ -8,12 +8,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ImageCompare {
-    
+	private static int POWER = 6;//Modify this to generate the SECTIONS, DIVISOR, and SUBCUBES (Shouldn't be more than 6 due to heap space constraints and should never be more than 8 since 2^8 = 256)
+    private static int SECTIONS = 2 << (POWER-1);
+    private static int DIVISOR = 256/SECTIONS;
+    private static int SUBCUBES = SECTIONS*SECTIONS*SECTIONS;
     public static void main(String[] args) {
         List<double[]> bucket_list = new ArrayList<double[]>();
         HashMap<Integer, String> imageIDS = new HashMap<>();
         HashMap<Integer, Double> distance_list = new HashMap<>();
-        double[] query_image_bucket = new double[64];
+        double[] query_image_bucket = new double[SUBCUBES];
                      
         Scanner scan = new Scanner(System.in);
        /* System.out.println("Enter the directory containing the collection of images.");
@@ -98,11 +101,11 @@ public class ImageCompare {
    
     public static double[] readPixels(BufferedImage image)
     {
-        int[] color_bucket = new int[64];
-        double[] color_bucket_percent = new double[64];
+        int[] color_bucket = new int[SUBCUBES];
+        double[] color_bucket_percent = new double[SUBCUBES];
         
-        for(int i=0; i<64; i++)
-            color_bucket[i] = 0;
+        /*for(int i=0; i<DIVISOR; i++)
+            color_bucket[i] = 0;*/
                 
         int h = image.getHeight();
         int w = image.getWidth();
@@ -118,12 +121,12 @@ public class ImageCompare {
                 int green = pixel[1];
                 int blue = pixel[2]; 
                 
-                int bucket = ((red/64)*16) + ((green/64)*4) + ((blue/64));
+                int bucket = ((red/DIVISOR)*(SECTIONS*SECTIONS)) + ((green/DIVISOR)*SECTIONS) + ((blue/DIVISOR));
                 color_bucket[bucket] = color_bucket[bucket] + 1;
             }
         }
         
-        for(int i=0; i<64; i++)
+        for(int i=0; i<SUBCUBES; i++)
             color_bucket_percent[i] = (double)color_bucket[i] / (double)num_pixels;
         
         return color_bucket_percent;
@@ -132,7 +135,7 @@ public class ImageCompare {
     public static double imageDistances(double[] a, double[] b)
     {
         double distance = 0;
-        for(int i=0; i<64; i++)
+        for(int i=0; i<SUBCUBES; i++)
             distance = distance + ( (a[i]-b[i])*(a[i]-b[i]) );
         distance = Math.sqrt(distance);
         return distance;
